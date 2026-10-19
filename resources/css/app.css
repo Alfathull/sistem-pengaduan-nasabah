@@ -9,7 +9,42 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* ── SiPeNa brand palette ───────────────────────────────── */
+    --color-ink: #0b1f3a;
+
+    --color-primary-50: #eef3fa;
+    --color-primary-100: #d8e3f3;
+    --color-primary-200: #b4c8e6;
+    --color-primary-300: #89a7d6;
+    --color-primary-400: #4f74b2;
+    --color-primary-500: #2a528e;
+    --color-primary-600: #12346b;
+    --color-primary-700: #0f2c5a;
+    --color-primary-800: #0b1f3a;
+    --color-primary-900: #081730;
+
+    --color-gold-400: #dcb45c;
+    --color-gold-500: #c8962e;
+    --color-gold-600: #a97d22;
+
+    --color-surface: #f7f8fa;
+    --color-line: #e3e7ee;
+    --color-muted: #5b6577;
+
+    --color-success: #1f8a5b;
+    --color-warning: #b7791f;
+    --color-danger: #c2410c;
+    --color-info: #2563eb;
+
+    /* Elevation: one soft level only */
+    --shadow-card: 0 1px 2px rgba(11, 31, 58, 0.04), 0 8px 24px rgba(11, 31, 58, 0.06);
+
+    /* Flux accent → navy so dashboard & landing stay consistent */
+    --color-accent: var(--color-primary-600);
+    --color-accent-content: var(--color-primary-600);
+    --color-accent-foreground: var(--color-white);
 
     --color-zinc-50: #fafafa;
     --color-zinc-100: #f5f5f5;
@@ -22,17 +57,14 @@
     --color-zinc-800: #262626;
     --color-zinc-900: #171717;
     --color-zinc-950: #0a0a0a;
-
-    --color-accent: var(--color-neutral-800);
-    --color-accent-content: var(--color-neutral-800);
-    --color-accent-foreground: var(--color-white);
 }
 
 @layer theme {
     .dark {
-        --color-accent: var(--color-white);
-        --color-accent-content: var(--color-white);
-        --color-accent-foreground: var(--color-neutral-800);
+        /* In dark mode, accent reads brighter for contrast */
+        --color-accent: var(--color-primary-300);
+        --color-accent-content: var(--color-primary-300);
+        --color-accent-foreground: var(--color-primary-900);
     }
 }
 
@@ -45,6 +77,29 @@
     ::file-selector-button {
         border-color: var(--color-gray-200, currentColor);
     }
+
+    /* Headings: tighter tracking, bold */
+    h1, h2, h3, h4, .font-heading {
+        letter-spacing: -0.02em;
+    }
+
+    /* Tabular figures for stats & tables */
+    .tabular-nums,
+    table,
+    [data-flux-table] {
+        font-variant-numeric: tabular-nums;
+        font-feature-settings: 'tnum' 1;
+    }
+}
+
+[x-cloak] { display: none !important; }
+
+html { scroll-behavior: smooth; }
+
+/* Subtle dot grid background used on the marketing hero */
+.bg-dotgrid {
+    background-image: radial-gradient(rgba(11, 31, 58, 0.06) 1px, transparent 1px);
+    background-size: 22px 22px;
 }
 
 [data-flux-field]:not(ui-radio, ui-checkbox) {
@@ -61,6 +116,10 @@ select:focus[data-flux-control] {
     @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
 }
 
-/* \[:where(&)\]:size-4 {
-    @apply size-4;
-} */
+/* Visible keyboard focus for interactive marketing elements */
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible {
+    outline: 2px solid var(--color-gold-500);
+    outline-offset: 2px;
+}

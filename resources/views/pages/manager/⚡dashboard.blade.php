@@ -45,7 +45,7 @@ new #[Layout('layouts::manager')] #[Title('Laporan Rekapitulasi')] class extends
     </div>
 
     <!-- Filter periode -->
-    <div class="mt-6 rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
+    <div class="mt-6 rounded-2xl border border-line bg-white p-4 shadow-card dark:border-zinc-700 dark:bg-zinc-900">
         <div class="grid gap-4 sm:grid-cols-3">
             <flux:input type="date" wire:model.live="dateFrom" :label="__('Dari Tanggal')" />
             <flux:input type="date" wire:model.live="dateTo" :label="__('Sampai Tanggal')" />
@@ -57,15 +57,9 @@ new #[Layout('layouts::manager')] #[Title('Laporan Rekapitulasi')] class extends
 
     <!-- Kartu ringkasan -->
     <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div class="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
-            <flux:text class="text-sm text-zinc-500">{{ __('Total Pengaduan') }}</flux:text>
-            <flux:heading size="xl" class="mt-1">{{ $report['total'] }}</flux:heading>
-        </div>
+        <x-stat-card :label="__('Total Pengaduan')" :value="$report['total']" />
         @foreach (array_slice($report['byStatus'], 0, 3, true) as $label => $count)
-            <div class="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700" wire:key="card-{{ $label }}">
-                <flux:text class="text-sm text-zinc-500">{{ $label }}</flux:text>
-                <flux:heading size="xl" class="mt-1">{{ $count }}</flux:heading>
-            </div>
+            <x-stat-card :label="$label" :value="$count" wire:key="card-{{ $label }}" />
         @endforeach
     </div>
 
@@ -76,19 +70,19 @@ new #[Layout('layouts::manager')] #[Title('Laporan Rekapitulasi')] class extends
         x-init="render()"
         class="mt-6 grid gap-6 lg:grid-cols-2"
     >
-        <div class="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
+        <div class="rounded-2xl border border-line bg-white p-5 shadow-card dark:border-zinc-700 dark:bg-zinc-900">
             <flux:heading size="sm">{{ __('Tren Pengaduan per Bulan') }}</flux:heading>
             <div class="mt-4"><canvas x-ref="trend" height="140"></canvas></div>
         </div>
-        <div class="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
+        <div class="rounded-2xl border border-line bg-white p-5 shadow-card dark:border-zinc-700 dark:bg-zinc-900">
             <flux:heading size="sm">{{ __('Pengaduan per Status') }}</flux:heading>
             <div class="mt-4"><canvas x-ref="status" height="140"></canvas></div>
         </div>
-        <div class="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
+        <div class="rounded-2xl border border-line bg-white p-5 shadow-card dark:border-zinc-700 dark:bg-zinc-900">
             <flux:heading size="sm">{{ __('Pengaduan per Kategori') }}</flux:heading>
             <div class="mt-4"><canvas x-ref="category" height="140"></canvas></div>
         </div>
-        <div class="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
+        <div class="rounded-2xl border border-line bg-white p-5 shadow-card dark:border-zinc-700 dark:bg-zinc-900">
             <flux:heading size="sm">{{ __('Pengaduan per Departemen') }}</flux:heading>
             <div class="mt-4"><canvas x-ref="department" height="140"></canvas></div>
         </div>
@@ -102,7 +96,7 @@ new #[Layout('layouts::manager')] #[Title('Laporan Rekapitulasi')] class extends
     <script>
         Alpine.data('reportCharts', (report) => ({
             charts: [],
-            palette: ['#1e3a8a', '#2563eb', '#f59e0b', '#9333ea', '#16a34a', '#dc2626', '#0ea5e9', '#64748b', '#db2777'],
+            palette: ['#0b1f3a', '#12346b', '#c8962e', '#2a528e', '#1f8a5b', '#c2410c', '#2563eb', '#5b6577', '#b7791f'],
             render() {
                 this.charts.forEach(c => c.destroy());
                 this.charts = [];
@@ -114,8 +108,8 @@ new #[Layout('layouts::manager')] #[Title('Laporan Rekapitulasi')] class extends
                         datasets: [{
                             label: 'Jumlah',
                             data: Object.values(report.monthlyTrend),
-                            borderColor: '#1e3a8a',
-                            backgroundColor: 'rgba(30,58,138,0.15)',
+                            borderColor: '#0b1f3a',
+                            backgroundColor: 'rgba(11,31,58,0.12)',
                             tension: 0.3,
                             fill: true,
                         }],
@@ -136,7 +130,7 @@ new #[Layout('layouts::manager')] #[Title('Laporan Rekapitulasi')] class extends
                     type: 'bar',
                     data: {
                         labels: Object.keys(report.byCategory),
-                        datasets: [{ label: 'Jumlah', data: Object.values(report.byCategory), backgroundColor: '#2563eb' }],
+                        datasets: [{ label: 'Jumlah', data: Object.values(report.byCategory), backgroundColor: '#12346b' }],
                     },
                     options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } },
                 }));
@@ -145,7 +139,7 @@ new #[Layout('layouts::manager')] #[Title('Laporan Rekapitulasi')] class extends
                     type: 'bar',
                     data: {
                         labels: Object.keys(report.byDepartment),
-                        datasets: [{ label: 'Jumlah', data: Object.values(report.byDepartment), backgroundColor: '#9333ea' }],
+                        datasets: [{ label: 'Jumlah', data: Object.values(report.byDepartment), backgroundColor: '#c8962e' }],
                     },
                     options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 } } } },
                 }));

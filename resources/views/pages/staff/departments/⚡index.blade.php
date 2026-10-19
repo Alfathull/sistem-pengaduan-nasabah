@@ -65,7 +65,7 @@ new #[Layout('layouts::staff')] #[Title('Departemen')] class extends Component {
         <flux:button variant="primary" icon="plus" wire:click="create">{{ __('Tambah') }}</flux:button>
     </div>
 
-    <div class="mt-6 overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-700">
+    <div class="mt-6 overflow-x-auto rounded-2xl border border-line bg-white dark:border-zinc-700 dark:bg-zinc-900">
         <flux:table>
             <flux:table.columns>
                 <flux:table.column>{{ __('Nama') }}</flux:table.column>

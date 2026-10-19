@@ -72,7 +72,7 @@ new #[Layout('layouts::customer')] #[Title('Buat Pengaduan')] class extends Comp
     <flux:separator class="my-6" />
 
     <form wire:submit="store" class="space-y-6">
-        <div class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
+        <div class="rounded-2xl border border-line bg-surface/60 p-4 dark:border-zinc-700 dark:bg-transparent">
             <flux:heading size="sm">{{ __('Identitas Pengadu') }}</flux:heading>
             <div class="mt-3 grid gap-4 sm:grid-cols-2">
                 <flux:input :label="__('Nama')" value="{{ auth()->user()->name }}" readonly />

@@ -42,7 +42,7 @@ new #[Layout('layouts::customer')] #[Title('Detail Pengaduan')] class extends Co
     <div class="mt-6 grid gap-6 lg:grid-cols-3">
         <!-- Detail pengaduan -->
         <div class="lg:col-span-2 space-y-6">
-            <div class="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
+            <div class="rounded-2xl border border-line bg-white p-5 shadow-card dark:border-zinc-700 dark:bg-zinc-900">
                 <flux:heading size="sm">{{ __('Data Pengaduan') }}</flux:heading>
                 <flux:separator class="my-3" />
                 <dl class="grid gap-4 sm:grid-cols-2">
@@ -81,7 +81,7 @@ new #[Layout('layouts::customer')] #[Title('Detail Pengaduan')] class extends Co
             </div>
 
             <!-- Identitas pengadu -->
-            <div class="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
+            <div class="rounded-2xl border border-line bg-white p-5 shadow-card dark:border-zinc-700 dark:bg-zinc-900">
                 <flux:heading size="sm">{{ __('Identitas Pengadu') }}</flux:heading>
                 <flux:separator class="my-3" />
                 <dl class="grid gap-4 sm:grid-cols-2">
@@ -102,14 +102,14 @@ new #[Layout('layouts::customer')] #[Title('Detail Pengaduan')] class extends Co
         </div>
 
         <!-- Timeline riwayat -->
-        <div class="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
+        <div class="rounded-2xl border border-line bg-white p-5 shadow-card dark:border-zinc-700 dark:bg-zinc-900">
             <flux:heading size="sm">{{ __('Riwayat & Tindak Lanjut') }}</flux:heading>
             <flux:separator class="my-3" />
 
             <ol class="relative space-y-5 border-s border-zinc-200 ps-5 dark:border-zinc-700">
                 @foreach ($complaint->histories as $history)
                     <li wire:key="history-{{ $history->id }}" class="relative">
-                        <span class="absolute -start-[1.4rem] mt-1 flex h-3 w-3 rounded-full bg-blue-600 ring-4 ring-white dark:ring-zinc-800"></span>
+                        <span class="absolute -start-[1.4rem] mt-1 flex h-3 w-3 rounded-full bg-primary-600 ring-4 ring-white dark:ring-zinc-800"></span>
                         <div class="flex items-center gap-2">
                             <x-status-badge :status="$history->status" />
                             <flux:text class="text-xs text-zinc-500">{{ $history->created_at->translatedFormat('d M Y H:i') }}</flux:text>

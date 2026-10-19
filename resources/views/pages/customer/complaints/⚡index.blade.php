@@ -57,15 +57,22 @@ new #[Layout('layouts::customer')] #[Title('Pengaduan Saya')] class extends Comp
 
     <div class="mt-6">
         @if ($complaints->isEmpty())
-            <div class="rounded-xl border border-dashed border-zinc-300 p-10 text-center dark:border-zinc-600">
-                <flux:icon.inbox class="mx-auto size-10 text-zinc-400" />
-                <flux:text class="mt-2">{{ __('Belum ada pengaduan.') }}</flux:text>
-            </div>
+            <x-empty-state
+                icon="inbox"
+                :title="__('Belum ada pengaduan')"
+                :description="__('Pengaduan yang Anda kirim akan muncul di sini beserta status dan riwayatnya.')"
+            >
+                <x-slot name="action">
+                    <flux:button variant="primary" icon="plus-circle" :href="route('customer.complaints.create')" wire:navigate>
+                        {{ __('Buat Pengaduan') }}
+                    </flux:button>
+                </x-slot>
+            </x-empty-state>
         @else
             <div class="space-y-3">
                 @foreach ($complaints as $complaint)
                     <a href="{{ route('customer.complaints.show', $complaint) }}" wire:navigate wire:key="complaint-{{ $complaint->id }}"
-                        class="block rounded-xl border border-zinc-200 p-4 transition hover:border-blue-400 hover:shadow-sm dark:border-zinc-700">
+                        class="block rounded-2xl border border-line bg-white p-4 transition hover:border-primary-300 hover:shadow-card dark:border-zinc-700 dark:bg-zinc-900">
                         <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                             <div class="min-w-0">
                                 <div class="flex items-center gap-2">

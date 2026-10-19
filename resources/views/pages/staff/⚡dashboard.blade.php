@@ -37,26 +37,14 @@ new #[Layout('layouts::staff')] #[Title('Dashboard CS')] class extends Component
     <flux:text class="mt-1">{{ __('Ringkasan tiket pengaduan nasabah.') }}</flux:text>
 
     <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div class="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
-            <flux:text class="text-sm text-zinc-500">{{ __('Total Pengaduan') }}</flux:text>
-            <flux:heading size="xl" class="mt-1">{{ $total }}</flux:heading>
-        </div>
-        <div class="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
-            <flux:text class="text-sm text-zinc-500">{{ __('Perlu Tindakan') }}</flux:text>
-            <flux:heading size="xl" class="mt-1 text-amber-600">{{ $needsAction }}</flux:heading>
-        </div>
-        <div class="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
-            <flux:text class="text-sm text-zinc-500">{{ __('Selesai') }}</flux:text>
-            <flux:heading size="xl" class="mt-1 text-green-600">{{ $byStatus[\App\Enums\ComplaintStatus::Selesai->value] }}</flux:heading>
-        </div>
-        <div class="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
-            <flux:text class="text-sm text-zinc-500">{{ __('Ditolak') }}</flux:text>
-            <flux:heading size="xl" class="mt-1 text-red-600">{{ $byStatus[\App\Enums\ComplaintStatus::Ditolak->value] }}</flux:heading>
-        </div>
+        <x-stat-card :label="__('Total Pengaduan')" :value="$total" />
+        <x-stat-card :label="__('Perlu Tindakan')" :value="$needsAction" accent="warning" />
+        <x-stat-card :label="__('Selesai')" :value="$byStatus[\App\Enums\ComplaintStatus::Selesai->value]" accent="success" />
+        <x-stat-card :label="__('Ditolak')" :value="$byStatus[\App\Enums\ComplaintStatus::Ditolak->value]" accent="danger" />
     </div>
 
     <div class="mt-6 grid gap-6 lg:grid-cols-2">
-        <div class="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
+        <div class="rounded-2xl border border-line bg-white p-5 shadow-card dark:border-zinc-700 dark:bg-zinc-900">
             <flux:heading size="sm">{{ __('Jumlah per Status') }}</flux:heading>
             <flux:separator class="my-3" />
             <div class="space-y-2">
@@ -69,7 +57,7 @@ new #[Layout('layouts::staff')] #[Title('Dashboard CS')] class extends Component
             </div>
         </div>
 
-        <div class="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
+        <div class="rounded-2xl border border-line bg-white p-5 shadow-card dark:border-zinc-700 dark:bg-zinc-900">
             <div class="flex items-center justify-between">
                 <flux:heading size="sm">{{ __('Pengaduan Terbaru') }}</flux:heading>
                 <flux:link class="text-sm" :href="route('staff.complaints.index')" wire:navigate>{{ __('Lihat semua') }}</flux:link>

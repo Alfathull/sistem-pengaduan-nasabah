@@ -80,7 +80,7 @@ new #[Layout('layouts::staff')] #[Title('Tiket Pengaduan')] class extends Compon
     <flux:heading size="xl">{{ __('Tiket Pengaduan') }}</flux:heading>
     <flux:text class="mt-1">{{ __('Kelola, validasi, dan distribusikan tiket pengaduan nasabah.') }}</flux:text>
 
-    <div class="mt-6 rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
+    <div class="mt-6 rounded-2xl border border-line bg-white p-4 shadow-card dark:border-zinc-700 dark:bg-zinc-900">
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <flux:input wire:model.live.debounce.400ms="search" :label="__('Cari')" icon="magnifying-glass" :placeholder="__('No. tiket / nama / subjek')" />
             <flux:select wire:model.live="statusFilter" :label="__('Status')">
@@ -103,7 +103,7 @@ new #[Layout('layouts::staff')] #[Title('Tiket Pengaduan')] class extends Compon
         </div>
     </div>
 
-    <div class="mt-6 overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-700">
+    <div class="mt-6 overflow-x-auto rounded-2xl border border-line bg-white dark:border-zinc-700 dark:bg-zinc-900">
         <flux:table :paginate="$complaints">
             <flux:table.columns>
                 <flux:table.column>{{ __('No. Tiket') }}</flux:table.column>

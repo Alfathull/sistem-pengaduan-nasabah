@@ -119,7 +119,7 @@ new #[Layout('layouts::staff')] #[Title('Kelola Pengguna')] class extends Compon
         <flux:input wire:model.live.debounce.400ms="search" icon="magnifying-glass" :placeholder="__('Cari nama / email')" />
     </div>
 
-    <div class="mt-4 overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-700">
+    <div class="mt-4 overflow-x-auto rounded-2xl border border-line bg-white dark:border-zinc-700 dark:bg-zinc-900">
         <flux:table :paginate="$users">
             <flux:table.columns>
                 <flux:table.column>{{ __('Nama') }}</flux:table.column>
