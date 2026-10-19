@@ -59,7 +59,7 @@ new #[Layout('layouts::customer')] #[Title('Buat Pengaduan')] class extends Comp
     public function with(): array
     {
         return [
-            'categories' => Category::where('is_active', true)->orderBy('name')->get(),
+            'categoryOptions' => Category::where('is_active', true)->orderBy('name')->pluck('name', 'id')->all(),
             'accountTypes' => AccountType::options(),
         ];
     }
@@ -78,19 +78,11 @@ new #[Layout('layouts::customer')] #[Title('Buat Pengaduan')] class extends Comp
                 <flux:input :label="__('Nama')" value="{{ auth()->user()->name }}" readonly />
                 <flux:input :label="__('Email')" value="{{ auth()->user()->email }}" readonly />
                 <flux:input :label="__('No. HP')" value="{{ auth()->user()->phone ?? '-' }}" readonly />
-                <flux:select wire:model="account_type" :label="__('Jenis Rekening')" :placeholder="__('Pilih jenis rekening')">
-                    @foreach ($accountTypes as $value => $label)
-                        <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
-                    @endforeach
-                </flux:select>
+                <x-ui.select wire:model="account_type" name="account_type" :label="__('Jenis Rekening')" :placeholder="__('Pilih jenis rekening')" :options="$accountTypes" :error="$errors->first('account_type')" />
             </div>
         </div>
 
-        <flux:select wire:model="category_id" :label="__('Kategori Layanan')" :placeholder="__('Pilih kategori')">
-            @foreach ($categories as $category)
-                <flux:select.option value="{{ $category->id }}">{{ $category->name }}</flux:select.option>
-            @endforeach
-        </flux:select>
+        <x-ui.select wire:model="category_id" name="category_id" :label="__('Kategori Layanan')" :placeholder="__('Pilih kategori')" :options="$categoryOptions" :error="$errors->first('category_id')" />
 
         <flux:input wire:model="subject" :label="__('Subjek')" :placeholder="__('Ringkasan singkat pengaduan')" />
 

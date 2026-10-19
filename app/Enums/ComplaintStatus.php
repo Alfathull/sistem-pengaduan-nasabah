@@ -33,6 +33,21 @@ enum ComplaintStatus: string
     }
 
     /**
+     * Penjelasan singkat arti status untuk nasabah.
+     */
+    public function description(): string
+    {
+        return match ($this) {
+            self::Baru => 'Pengaduan Anda telah diterima dan menunggu diperiksa oleh petugas.',
+            self::Divalidasi => 'Pengaduan Anda telah diperiksa dan dinyatakan valid untuk ditindaklanjuti.',
+            self::Diproses => 'Petugas sedang menindaklanjuti pengaduan Anda.',
+            self::Dieskalasi => 'Pengaduan Anda diteruskan ke departemen terkait untuk penanganan lanjutan.',
+            self::Selesai => 'Pengaduan Anda telah selesai ditangani.',
+            self::Ditolak => 'Pengaduan Anda tidak dapat diproses. Silakan lihat alasan penolakan.',
+        };
+    }
+
+    /**
      * Warna badge Flux untuk status ini.
      */
     public function color(): string
@@ -44,6 +59,31 @@ enum ComplaintStatus: string
             self::Dieskalasi => 'purple',
             self::Selesai => 'green',
             self::Ditolak => 'red',
+        };
+    }
+
+    /**
+     * Urutan tahapan utama alur (tanpa Ditolak) untuk progress stepper.
+     *
+     * @return array<int, self>
+     */
+    public static function flow(): array
+    {
+        return [self::Baru, self::Divalidasi, self::Diproses, self::Dieskalasi, self::Selesai];
+    }
+
+    /**
+     * Posisi status ini dalam alur utama (0-based). Ditolak mengembalikan -1.
+     */
+    public function flowIndex(): int
+    {
+        return match ($this) {
+            self::Baru => 0,
+            self::Divalidasi => 1,
+            self::Diproses => 2,
+            self::Dieskalasi => 3,
+            self::Selesai => 4,
+            self::Ditolak => -1,
         };
     }
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ComplaintStatus;
 use App\Enums\UserRole;
 use App\Models\Category;
 use App\Models\Complaint;
@@ -56,4 +57,25 @@ it('halaman pimpinan dapat dirender', function () {
 
     actingAs($pimpinan)->get(route('manager.dashboard'))->assertOk();
     actingAs($pimpinan)->get(route('dashboard'))->assertRedirect(route('manager.dashboard'));
+});
+
+it('filter cepat nasabah menyaring pengaduan per kelompok status', function () {
+    $nasabah = roleUser(UserRole::Nasabah);
+    $categoryId = Category::first()->id;
+
+    Complaint::factory()->create(['user_id' => $nasabah->id, 'category_id' => $categoryId, 'status' => ComplaintStatus::Diproses->value]);
+    Complaint::factory()->create(['user_id' => $nasabah->id, 'category_id' => $categoryId, 'status' => ComplaintStatus::Selesai->value]);
+
+    Livewire\Livewire::actingAs($nasabah)
+        ->test('pages::customer.complaints.index')
+        ->call('setFilter', 'aktif')
+        ->assertSet('statusFilter', 'aktif')
+        ->call('setFilter', 'aktif')
+        ->assertSet('statusFilter', '');
+});
+
+it('setiap status memiliki deskripsi untuk nasabah', function () {
+    foreach (ComplaintStatus::cases() as $status) {
+        expect($status->description())->not->toBe('');
+    }
 });

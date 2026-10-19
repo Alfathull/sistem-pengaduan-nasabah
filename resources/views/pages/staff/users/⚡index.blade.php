@@ -49,11 +49,13 @@ new #[Layout('layouts::staff')] #[Title('Kelola Pengguna')] class extends Compon
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->editingId)],
-            'phone' => ['nullable', 'string', 'max:20'],
+            'phone' => ['nullable', 'string', 'regex:/^[0-9]+$/', 'min:8', 'max:15'],
             'role' => ['required', Rule::in(UserRole::values())],
             'account_type' => ['nullable', Rule::in(array_column(AccountType::cases(), 'value'))],
             'password' => [$this->editingId ? 'nullable' : 'required', 'string', 'min:8'],
-        ], [], [
+        ], [
+            'phone.regex' => 'Nomor HP hanya boleh berisi angka.',
+        ], [
             'name' => 'nama',
             'email' => 'email',
             'phone' => 'nomor HP',
@@ -119,33 +121,63 @@ new #[Layout('layouts::staff')] #[Title('Kelola Pengguna')] class extends Compon
         <flux:input wire:model.live.debounce.400ms="search" icon="magnifying-glass" :placeholder="__('Cari nama / email')" />
     </div>
 
-    <div class="mt-4 overflow-x-auto rounded-2xl border border-line bg-white dark:border-zinc-700 dark:bg-zinc-900">
-        <flux:table :paginate="$users">
-            <flux:table.columns>
-                <flux:table.column>{{ __('Nama') }}</flux:table.column>
-                <flux:table.column>{{ __('Email') }}</flux:table.column>
-                <flux:table.column>{{ __('No. HP') }}</flux:table.column>
-                <flux:table.column>{{ __('Role') }}</flux:table.column>
-                <flux:table.column></flux:table.column>
-            </flux:table.columns>
-            <flux:table.rows>
-                @foreach ($users as $user)
-                    <flux:table.row wire:key="user-{{ $user->id }}">
-                        <flux:table.cell variant="strong">{{ $user->name }}</flux:table.cell>
-                        <flux:table.cell>{{ $user->email }}</flux:table.cell>
-                        <flux:table.cell>{{ $user->phone ?? '-' }}</flux:table.cell>
-                        <flux:table.cell>
-                            <flux:badge color="blue" size="sm" inset="top bottom">
-                                {{ \App\Enums\UserRole::tryFrom($user->roles->first()?->name ?? '')?->label() ?? '-' }}
-                            </flux:badge>
-                        </flux:table.cell>
-                        <flux:table.cell>
-                            <flux:button size="xs" variant="ghost" icon="pencil-square" wire:click="edit({{ $user->id }})">{{ __('Ubah') }}</flux:button>
-                        </flux:table.cell>
-                    </flux:table.row>
-                @endforeach
-            </flux:table.rows>
-        </flux:table>
+    {{-- Desktop: tabel --}}
+    <div class="mt-4 hidden overflow-hidden rounded-2xl border border-line bg-white shadow-card md:block dark:border-zinc-700 dark:bg-zinc-900">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-line bg-surface text-left text-xs uppercase tracking-wide text-muted dark:border-zinc-700 dark:bg-zinc-800">
+                        <th class="px-5 py-3.5 font-semibold">{{ __('Nama') }}</th>
+                        <th class="px-5 py-3.5 font-semibold">{{ __('Email') }}</th>
+                        <th class="px-5 py-3.5 font-semibold">{{ __('No. HP') }}</th>
+                        <th class="px-5 py-3.5 font-semibold">{{ __('Role') }}</th>
+                        <th class="px-5 py-3.5 text-right font-semibold"><span class="sr-only">{{ __('Aksi') }}</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($users as $user)
+                        <tr wire:key="user-{{ $user->id }}" class="border-b border-line transition last:border-0 hover:bg-primary-50 dark:border-zinc-800 dark:hover:bg-zinc-800">
+                            <td class="px-5 py-3.5 font-semibold text-ink dark:text-white">{{ $user->name }}</td>
+                            <td class="px-5 py-3.5 text-ink dark:text-zinc-100">{{ $user->email }}</td>
+                            <td class="px-5 py-3.5 text-muted tabular-nums">{{ $user->phone ?? '-' }}</td>
+                            <td class="px-5 py-3.5">
+                                <flux:badge color="blue" size="sm" inset="top bottom">
+                                    {{ \App\Enums\UserRole::tryFrom($user->roles->first()?->name ?? '')?->label() ?? '-' }}
+                                </flux:badge>
+                            </td>
+                            <td class="px-5 py-3.5 text-right">
+                                <flux:button size="xs" variant="ghost" icon="pencil-square" wire:click="edit({{ $user->id }})">{{ __('Ubah') }}</flux:button>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {{-- Mobile: daftar kartu --}}
+    <div class="mt-4 space-y-3 md:hidden">
+        @foreach ($users as $user)
+            <div wire:key="ucard-{{ $user->id }}" class="rounded-2xl border border-line bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0">
+                        <p class="truncate font-semibold text-ink dark:text-white">{{ $user->name }}</p>
+                        <p class="truncate text-sm text-muted">{{ $user->email }}</p>
+                    </div>
+                    <flux:badge color="blue" size="sm" inset="top bottom">
+                        {{ \App\Enums\UserRole::tryFrom($user->roles->first()?->name ?? '')?->label() ?? '-' }}
+                    </flux:badge>
+                </div>
+                <div class="mt-2 flex items-center justify-between">
+                    <span class="text-xs text-muted tabular-nums">{{ $user->phone ?? '-' }}</span>
+                    <flux:button size="xs" variant="ghost" icon="pencil-square" wire:click="edit({{ $user->id }})">{{ __('Ubah') }}</flux:button>
+                </div>
+            </div>
+        @endforeach
+    </div>
+
+    <div class="mt-5">
+        {{ $users->links('vendor.pagination.sipena', ['unit' => __('pengguna')]) }}
     </div>
 
     <flux:modal wire:model.self="showModal" class="max-w-md">
@@ -153,18 +185,18 @@ new #[Layout('layouts::staff')] #[Title('Kelola Pengguna')] class extends Compon
             <flux:heading size="lg">{{ $editingId ? __('Ubah Pengguna') : __('Tambah Pengguna') }}</flux:heading>
             <flux:input wire:model="name" :label="__('Nama')" />
             <flux:input wire:model="email" type="email" :label="__('Email')" />
-            <flux:input wire:model="phone" :label="__('No. HP')" />
-            <flux:select wire:model.live="role" :label="__('Role')" :placeholder="__('Pilih role')">
-                @foreach ($roleOptions as $value => $label)
-                    <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
-                @endforeach
-            </flux:select>
+            <flux:input
+                wire:model="phone"
+                :label="__('No. HP')"
+                type="tel"
+                inputmode="numeric"
+                maxlength="15"
+                x-on:input="$el.value = $el.value.replace(/\D/g, '')"
+                x-on:keypress="if (!/[0-9]/.test($event.key)) $event.preventDefault()"
+            />
+            <x-ui.select wire:model.live="role" :label="__('Role')" :placeholder="__('Pilih role')" :options="$roleOptions" :error="$errors->first('role')" />
             @if ($isNasabahRole)
-                <flux:select wire:model="account_type" :label="__('Jenis Rekening')" :placeholder="__('Pilih jenis rekening')">
-                    @foreach ($accountTypes as $value => $label)
-                        <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
-                    @endforeach
-                </flux:select>
+                <x-ui.select wire:model="account_type" :label="__('Jenis Rekening')" :placeholder="__('Pilih jenis rekening')" :options="$accountTypes" :error="$errors->first('account_type')" />
             @endif
             <flux:input wire:model="password" type="password" :label="$editingId ? __('Kata Sandi (kosongkan jika tidak diubah)') : __('Kata Sandi')" viewable />
             <div class="flex justify-end gap-2">

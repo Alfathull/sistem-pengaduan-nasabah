@@ -24,10 +24,12 @@ class CreateNewUser implements CreatesNewUsers
     {
         Validator::make($input, [
             ...$this->profileRules(),
-            'phone' => ['required', 'string', 'max:20'],
+            'phone' => ['required', 'string', 'regex:/^[0-9]+$/', 'min:8', 'max:15'],
             'account_type' => ['required', Rule::in(array_column(AccountType::cases(), 'value'))],
             'password' => $this->passwordRules(),
-        ], [], [
+        ], [
+            'phone.regex' => 'Nomor HP hanya boleh berisi angka.',
+        ], [
             'phone' => 'nomor HP',
             'account_type' => 'jenis rekening',
         ])->validate();

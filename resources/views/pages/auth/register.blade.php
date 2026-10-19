@@ -5,7 +5,8 @@
         <!-- Session Status -->
         <x-auth-session-status class="text-center" :status="session('status')" />
 
-        <form method="POST" action="{{ route('register.store') }}" class="flex flex-col gap-6">
+        <form method="POST" action="{{ route('register.store') }}" class="flex flex-col gap-6"
+            x-data="{ submitting: false }" x-on:submit="submitting = true">
             @csrf
             <!-- Nama -->
             <flux:input
@@ -30,7 +31,7 @@
                 placeholder="email@contoh.com"
             />
 
-            <!-- No. HP -->
+            <!-- No. HP (hanya angka) -->
             <flux:input
                 name="phone"
                 :label="__('Nomor HP')"
@@ -38,15 +39,21 @@
                 type="tel"
                 required
                 autocomplete="tel"
+                inputmode="numeric"
+                maxlength="15"
                 :placeholder="__('08xxxxxxxxxx')"
+                x-on:input="$el.value = $el.value.replace(/\D/g, '')"
+                x-on:keypress="if (!/[0-9]/.test($event.key)) $event.preventDefault()"
             />
 
             <!-- Jenis Rekening -->
-            <flux:select name="account_type" :label="__('Jenis Rekening')" :placeholder="__('Pilih jenis rekening')" required>
-                @foreach (\App\Enums\AccountType::options() as $value => $label)
-                    <flux:select.option value="{{ $value }}" :selected="old('account_type') === $value">{{ $label }}</flux:select.option>
-                @endforeach
-            </flux:select>
+            <x-ui.select
+                name="account_type"
+                :label="__('Jenis Rekening')"
+                :placeholder="__('Pilih jenis rekening')"
+                :options="\App\Enums\AccountType::options()"
+                :error="$errors->first('account_type')"
+            />
 
             <!-- Password -->
             <flux:input
@@ -73,8 +80,22 @@
             />
 
             <div class="flex items-center justify-end">
-                <flux:button type="submit" variant="primary" class="w-full" data-test="register-user-button">
-                    {{ __('Daftar') }}
+                <flux:button
+                    type="submit"
+                    variant="primary"
+                    class="w-full"
+                    data-test="register-user-button"
+                    x-bind:disabled="submitting"
+                    x-bind:data-loading="submitting"
+                >
+                    <span x-show="!submitting">{{ __('Daftar') }}</span>
+                    <span x-show="submitting" x-cloak class="inline-flex items-center gap-2">
+                        <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.4 0 0 5.4 0 12h4z"></path>
+                        </svg>
+                        {{ __('Memproses...') }}
+                    </span>
                 </flux:button>
             </div>
         </form>

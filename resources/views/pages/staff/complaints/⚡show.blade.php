@@ -75,7 +75,7 @@ new #[Layout('layouts::staff')] #[Title('Detail Tiket')] class extends Component
             'canManage' => Auth::user()->can('manage', $this->complaint),
             'statusOptions' => ComplaintStatus::options(),
             'priorityOptions' => ComplaintPriority::options(),
-            'departments' => Department::where('is_active', true)->orderBy('name')->get(),
+            'departmentOptions' => Department::where('is_active', true)->orderBy('name')->pluck('name', 'id')->all(),
             'isEscalated' => $this->status === ComplaintStatus::Dieskalasi->value,
             'isRejected' => $this->status === ComplaintStatus::Ditolak->value,
         ];
@@ -94,7 +94,7 @@ new #[Layout('layouts::staff')] #[Title('Detail Tiket')] class extends Component
         <x-status-badge :status="$complaint->status" />
         <x-priority-badge :priority="$complaint->priority" />
     </div>
-    <flux:text class="mt-1">{{ __('Dibuat :date', ['date' => $complaint->created_at->translatedFormat('d F Y H:i')]) }}</flux:text>
+    <flux:text class="mt-1">{{ __('Dibuat :date', ['date' => $complaint->created_at->translatedFormat('d M Y, H:i')]) }}</flux:text>
 
     <div class="mt-6 grid gap-6 lg:grid-cols-3">
         <!-- Kolom kiri: detail + riwayat -->
@@ -120,23 +120,34 @@ new #[Layout('layouts::staff')] #[Title('Detail Tiket')] class extends Component
             <div class="rounded-2xl border border-line bg-white p-5 shadow-card dark:border-zinc-700 dark:bg-zinc-900">
                 <flux:heading size="sm">{{ __('Riwayat Tindak Lanjut') }}</flux:heading>
                 <flux:separator class="my-3" />
-                <ol class="relative space-y-5 border-s border-zinc-200 ps-5 dark:border-zinc-700">
+                <ol>
                     @foreach ($complaint->histories as $history)
-                        <li wire:key="hist-{{ $history->id }}" class="relative">
-                            <span class="absolute -start-[1.4rem] mt-1 flex h-3 w-3 rounded-full bg-primary-600 ring-4 ring-white dark:ring-zinc-800"></span>
-                            <div class="flex flex-wrap items-center gap-2">
-                                <x-status-badge :status="$history->status" />
-                                <flux:text class="text-xs text-zinc-500">{{ $history->created_at->translatedFormat('d M Y H:i') }}</flux:text>
-                                @if ($history->user)
-                                    <flux:text class="text-xs text-zinc-500">&middot; {{ $history->user->name }}</flux:text>
+                        <li wire:key="hist-{{ $history->id }}" class="grid grid-cols-[24px_1fr] gap-x-3">
+                            <div class="flex flex-col items-center">
+                                <span @class([
+                                    'mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full',
+                                    'bg-gold-500 ring-4 ring-gold-500/20' => $loop->first,
+                                    'bg-primary-600' => ! $loop->first,
+                                ])></span>
+                                @unless ($loop->last)
+                                    <span class="w-0.5 flex-1 bg-line dark:bg-zinc-700"></span>
+                                @endunless
+                            </div>
+                            <div @class(['min-w-0 pb-5', '-mt-1 rounded-lg bg-primary-50 px-3 py-2 dark:bg-zinc-800' => $loop->first])>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <x-status-badge :status="$history->status" />
+                                    <span class="text-sm text-muted tabular-nums">{{ $history->created_at->translatedFormat('d M Y, H:i') }}</span>
+                                    @if ($history->user)
+                                        <span class="text-xs text-muted">&middot; {{ $history->user->name }}</span>
+                                    @endif
+                                </div>
+                                @if ($history->follow_up)
+                                    <p class="mt-1 whitespace-pre-line text-sm text-ink dark:text-zinc-100">{{ $history->follow_up }}</p>
+                                @endif
+                                @if ($history->department)
+                                    <p class="mt-1 text-xs text-muted">{{ __('Departemen: :dept', ['dept' => $history->department->name]) }}</p>
                                 @endif
                             </div>
-                            @if ($history->follow_up)
-                                <flux:text class="mt-1 text-sm">{{ $history->follow_up }}</flux:text>
-                            @endif
-                            @if ($history->department)
-                                <flux:text class="mt-1 text-xs text-zinc-500">{{ __('Departemen: :dept', ['dept' => $history->department->name]) }}</flux:text>
-                            @endif
                         </li>
                     @endforeach
                 </ol>
@@ -154,24 +165,12 @@ new #[Layout('layouts::staff')] #[Title('Detail Tiket')] class extends Component
                 </flux:callout>
             @else
                 <form wire:submit="save" class="space-y-4">
-                    <flux:select wire:model.live="status" :label="__('Status')">
-                        @foreach ($statusOptions as $value => $label)
-                            <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
-                        @endforeach
-                    </flux:select>
+                    <x-ui.select wire:model.live="status" :label="__('Status')" :options="$statusOptions" :error="$errors->first('status')" />
 
-                    <flux:select wire:model="priority" :label="__('Prioritas')" :placeholder="__('Pilih prioritas')">
-                        @foreach ($priorityOptions as $value => $label)
-                            <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
-                        @endforeach
-                    </flux:select>
+                    <x-ui.select wire:model="priority" :label="__('Prioritas')" :placeholder="__('Pilih prioritas')" :options="$priorityOptions" :error="$errors->first('priority')" />
 
                     @if ($isEscalated)
-                        <flux:select wire:model="department_id" :label="__('Eskalasi ke Departemen')" :placeholder="__('Pilih departemen')">
-                            @foreach ($departments as $department)
-                                <flux:select.option value="{{ $department->id }}">{{ $department->name }}</flux:select.option>
-                            @endforeach
-                        </flux:select>
+                        <x-ui.select wire:model="department_id" :label="__('Eskalasi ke Departemen')" :placeholder="__('Pilih departemen')" :options="$departmentOptions" :error="$errors->first('department_id')" />
                     @endif
 
                     @if ($isRejected)

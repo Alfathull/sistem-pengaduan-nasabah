@@ -42,3 +42,16 @@ it('registrasi menolak jenis rekening yang tidak valid', function () {
 
     expect(User::where('email', 'budi2@example.com')->exists())->toBeFalse();
 });
+
+it('registrasi menolak nomor HP yang mengandung huruf', function () {
+    post(route('register.store'), [
+        'name' => 'Budi Santoso',
+        'email' => 'budi3@example.com',
+        'phone' => '0812-ABC-123',
+        'account_type' => AccountType::Tabungan->value,
+        'password' => 'password123',
+        'password_confirmation' => 'password123',
+    ])->assertSessionHasErrors('phone');
+
+    expect(User::where('email', 'budi3@example.com')->exists())->toBeFalse();
+});

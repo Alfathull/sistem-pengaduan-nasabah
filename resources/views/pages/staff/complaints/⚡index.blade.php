@@ -71,7 +71,7 @@ new #[Layout('layouts::staff')] #[Title('Tiket Pengaduan')] class extends Compon
         return [
             'complaints' => $query->paginate(12),
             'statusOptions' => ComplaintStatus::options(),
-            'categories' => Category::orderBy('name')->get(),
+            'categoryOptions' => Category::orderBy('name')->pluck('name', 'id')->all(),
         ];
     }
 }; ?>
@@ -83,18 +83,8 @@ new #[Layout('layouts::staff')] #[Title('Tiket Pengaduan')] class extends Compon
     <div class="mt-6 rounded-2xl border border-line bg-white p-4 shadow-card dark:border-zinc-700 dark:bg-zinc-900">
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <flux:input wire:model.live.debounce.400ms="search" :label="__('Cari')" icon="magnifying-glass" :placeholder="__('No. tiket / nama / subjek')" />
-            <flux:select wire:model.live="statusFilter" :label="__('Status')">
-                <flux:select.option value="">{{ __('Semua status') }}</flux:select.option>
-                @foreach ($statusOptions as $value => $label)
-                    <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
-                @endforeach
-            </flux:select>
-            <flux:select wire:model.live="categoryFilter" :label="__('Kategori')">
-                <flux:select.option value="">{{ __('Semua kategori') }}</flux:select.option>
-                @foreach ($categories as $category)
-                    <flux:select.option value="{{ $category->id }}">{{ $category->name }}</flux:select.option>
-                @endforeach
-            </flux:select>
+            <x-ui.select wire:model.live="statusFilter" :label="__('Status')" :options="['' => __('Semua status')] + $statusOptions" />
+            <x-ui.select wire:model.live="categoryFilter" :label="__('Kategori')" :options="['' => __('Semua kategori')] + $categoryOptions" />
             <flux:input type="date" wire:model.live="dateFrom" :label="__('Dari Tanggal')" />
             <flux:input type="date" wire:model.live="dateTo" :label="__('Sampai Tanggal')" />
             <div class="flex items-end">
@@ -103,36 +93,67 @@ new #[Layout('layouts::staff')] #[Title('Tiket Pengaduan')] class extends Compon
         </div>
     </div>
 
-    <div class="mt-6 overflow-x-auto rounded-2xl border border-line bg-white dark:border-zinc-700 dark:bg-zinc-900">
-        <flux:table :paginate="$complaints">
-            <flux:table.columns>
-                <flux:table.column>{{ __('No. Tiket') }}</flux:table.column>
-                <flux:table.column>{{ __('Pengadu') }}</flux:table.column>
-                <flux:table.column>{{ __('Subjek') }}</flux:table.column>
-                <flux:table.column>{{ __('Kategori') }}</flux:table.column>
-                <flux:table.column>{{ __('Tanggal') }}</flux:table.column>
-                <flux:table.column>{{ __('Status') }}</flux:table.column>
-                <flux:table.column></flux:table.column>
-            </flux:table.columns>
-            <flux:table.rows>
-                @forelse ($complaints as $complaint)
-                    <flux:table.row wire:key="row-{{ $complaint->id }}">
-                        <flux:table.cell variant="strong">{{ $complaint->ticket_number }}</flux:table.cell>
-                        <flux:table.cell>{{ $complaint->reporter_name }}</flux:table.cell>
-                        <flux:table.cell class="max-w-xs truncate">{{ $complaint->subject }}</flux:table.cell>
-                        <flux:table.cell>{{ $complaint->category->name }}</flux:table.cell>
-                        <flux:table.cell>{{ $complaint->created_at->translatedFormat('d M Y') }}</flux:table.cell>
-                        <flux:table.cell><x-status-badge :status="$complaint->status" /></flux:table.cell>
-                        <flux:table.cell>
-                            <flux:button size="xs" variant="ghost" icon="eye" :href="route('staff.complaints.show', $complaint)" wire:navigate>{{ __('Detail') }}</flux:button>
-                        </flux:table.cell>
-                    </flux:table.row>
-                @empty
-                    <flux:table.row>
-                        <flux:table.cell colspan="7" class="text-center text-zinc-500">{{ __('Tidak ada tiket yang cocok.') }}</flux:table.cell>
-                    </flux:table.row>
-                @endforelse
-            </flux:table.rows>
-        </flux:table>
-    </div>
+    @if ($complaints->isEmpty())
+        <div class="mt-6">
+            <x-empty-state icon="search" :title="__('Tidak ada tiket yang cocok')" :description="__('Coba ubah atau atur ulang filter pencarian Anda.')" />
+        </div>
+    @else
+        {{-- Desktop: tabel --}}
+        <div class="mt-6 hidden overflow-hidden rounded-2xl border border-line bg-white shadow-card md:block dark:border-zinc-700 dark:bg-zinc-900">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-line bg-surface text-left text-xs uppercase tracking-wide text-muted dark:border-zinc-700 dark:bg-zinc-800">
+                            <th class="px-5 py-3.5 font-semibold">{{ __('No. Tiket') }}</th>
+                            <th class="px-5 py-3.5 font-semibold">{{ __('Pengadu') }}</th>
+                            <th class="px-5 py-3.5 font-semibold">{{ __('Subjek') }}</th>
+                            <th class="px-5 py-3.5 font-semibold">{{ __('Kategori') }}</th>
+                            <th class="px-5 py-3.5 text-right font-semibold">{{ __('Tanggal') }}</th>
+                            <th class="px-5 py-3.5 font-semibold">{{ __('Status') }}</th>
+                            <th class="px-5 py-3.5 text-right font-semibold"><span class="sr-only">{{ __('Aksi') }}</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($complaints as $complaint)
+                            <tr
+                                wire:key="row-{{ $complaint->id }}"
+                                onclick="window.Livewire.navigate('{{ route('staff.complaints.show', $complaint) }}')"
+                                class="cursor-pointer border-b border-line transition last:border-0 hover:bg-primary-50 dark:border-zinc-800 dark:hover:bg-zinc-800"
+                            >
+                                <td class="px-5 py-3.5 font-mono font-semibold text-ink tabular-nums dark:text-white">{{ $complaint->ticket_number }}</td>
+                                <td class="px-5 py-3.5 text-ink dark:text-zinc-100">{{ $complaint->reporter_name }}</td>
+                                <td class="max-w-xs truncate px-5 py-3.5 text-ink dark:text-zinc-100">{{ $complaint->subject }}</td>
+                                <td class="px-5 py-3.5 text-muted">{{ $complaint->category->name }}</td>
+                                <td class="px-5 py-3.5 text-right text-muted tabular-nums">{{ $complaint->created_at->translatedFormat('d M Y') }}</td>
+                                <td class="px-5 py-3.5"><x-status-badge :status="$complaint->status" /></td>
+                                <td class="px-5 py-3.5 text-right" onclick="event.stopPropagation()">
+                                    <flux:button size="xs" variant="ghost" icon="eye" :href="route('staff.complaints.show', $complaint)" wire:navigate>{{ __('Detail') }}</flux:button>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {{-- Mobile: daftar kartu --}}
+        <div class="mt-6 space-y-3 md:hidden">
+            @foreach ($complaints as $complaint)
+                <a href="{{ route('staff.complaints.show', $complaint) }}" wire:navigate wire:key="card-{{ $complaint->id }}"
+                    class="block rounded-2xl border border-line bg-white p-4 transition hover:border-primary-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent dark:border-zinc-700 dark:bg-zinc-900">
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="font-mono text-xs font-semibold text-muted tabular-nums">{{ $complaint->ticket_number }}</span>
+                        <x-status-badge :status="$complaint->status" />
+                    </div>
+                    <p class="mt-1.5 truncate font-semibold text-ink dark:text-white">{{ $complaint->subject }}</p>
+                    <p class="mt-0.5 text-sm text-muted">{{ $complaint->reporter_name }} &middot; {{ $complaint->category->name }}</p>
+                    <p class="mt-0.5 text-xs text-muted tabular-nums">{{ $complaint->created_at->translatedFormat('d M Y') }}</p>
+                </a>
+            @endforeach
+        </div>
+
+        <div class="mt-5">
+            {{ $complaints->links('vendor.pagination.sipena', ['unit' => __('tiket')]) }}
+        </div>
+    @endif
 </div>
